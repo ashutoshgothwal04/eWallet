@@ -1,16 +1,23 @@
 import express from "express";
 import dotenv from "dotenv";
 import { sql } from "./config/db.js";
-import transactionRouter from "./routes/transactionRoute.js"
+import transactionRouter from "./routes/transactionRoute.js";
 import rateLimiter from "./middleware/rateLimiter.js";
+import job from "./config/cron.js";
 
 dotenv.config();
 
 const app = express();
 
+if (process.env.NODE_ENV === "production") job.start();
+
 // middleware
 app.use(rateLimiter);
 app.use(express.json()); // Middleware to parse JSON request bodies
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ message: "Server is running", status: "OK" });
+});
 
 async function initDb() {
   try {
